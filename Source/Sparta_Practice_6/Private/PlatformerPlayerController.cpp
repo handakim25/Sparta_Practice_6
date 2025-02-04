@@ -3,9 +3,29 @@
 
 #include "PlatformerPlayerController.h"
 #include "EnhancedInputSubsystems.h"
+#include "HudWidget.h"
+#include "ResultWidget.h"
+#include "TimeGameMode.h"
 
 APlatformerPlayerController::APlatformerPlayerController()
 {
+}
+
+void APlatformerPlayerController::ShowResultWidget(bool bClear)
+{
+	if (ResultWidgetClass)
+	{
+		if (UResultWidget* ResultWidget = CreateWidget<UResultWidget>(GetWorld(), ResultWidgetClass))
+		{
+			ResultWidget->AddToViewport();
+			
+			SetPause(true);
+			
+			const FInputModeUIOnly InputModeUI;
+			SetInputMode(InputModeUI);
+			bShowMouseCursor = true;
+		}
+	}
 }
 
 void APlatformerPlayerController::BeginPlay()
@@ -22,6 +42,20 @@ void APlatformerPlayerController::BeginPlay()
 			{
 				Subsystem->AddMappingContext(InputMappingContext, 0);
 			}
+		}
+	}
+
+	if (const auto GameMode = GetWorld()->GetAuthGameMode<ATimeGameMode>())
+	{
+		GameMode->OnGameEnd.AddDynamic(this, &APlatformerPlayerController::ShowResultWidget);
+	}
+
+	if (HudWidgetClass)
+	{
+		HudWidget = CreateWidget<UHudWidget>(this, HudWidgetClass);
+		if (HudWidget)
+		{
+			HudWidget->AddToViewport();
 		}
 	}
 }

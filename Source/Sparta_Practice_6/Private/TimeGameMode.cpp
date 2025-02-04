@@ -10,26 +10,41 @@ ATimeGameMode::ATimeGameMode()
 {
 	DefaultPawnClass = APlayerCharacter::StaticClass();
 	PlayerControllerClass = APlatformerPlayerController::StaticClass();
-	
+
+	StartTime = 0.0f;
 	RoundTime = 300.0f;
+	RemainTime = 300.0f;
 }
 
 float ATimeGameMode::GetRemainTime() const
 {
-	return GetWorldTimerManager().IsTimerActive(TimerHandle) ?
-		GetWorldTimerManager().GetTimerRemaining(TimerHandle) : 0.0f;
+	return RemainTime;
+}
+
+void ATimeGameMode::EndGame(const bool bGameClear) const
+{
+	OnGameEnd.Broadcast(bGameClear);
 }
 
 void ATimeGameMode::BeginPlay()
 {
 	Super::BeginPlay();
 
-	GetWorldTimerManager().SetTimer(TimerHandle, this, &ATimeGameMode::OnRoundEnd, RoundTime, false);
+	StartTime = GetWorld()->GetTimeSeconds();
+	RemainTime = RoundTime;
+	GetWorldTimerManager().SetTimer(TimerHandle, this, &ATimeGameMode::UpdateTimer, 1.0f, true);
 }
 
-void ATimeGameMode::OnRoundEnd()
+void ATimeGameMode::UpdateTimer()
 {
-	// 패배 처리
-	// - 게임 시간 정지
-	// - 게임 종료 UI 출력 -> 확인 누르면 레벨 재시작
+	if (RemainTime > 0.0f)
+	{
+		RemainTime--;
+
+		OnTimerUpdated.Broadcast(RemainTime);
+	}
+	else
+	{
+		EndGame(false);	
+	}
 }

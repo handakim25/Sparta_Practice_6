@@ -31,6 +31,16 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input")
 	TObjectPtr<class UInputAction> JumpAction;
 
+	UFUNCTION(BluePrintCallable, Category = "UI")
+	void ShowResultWidget(bool bClear);
 protected:
 	virtual void BeginPlay() override;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
+	TSubclassOf<class UHudWidget> HudWidgetClass;
+	UPROPERTY()
+	TObjectPtr<class UHudWidget> HudWidget;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
+	TSubclassOf<class UResultWidget> ResultWidgetClass;
 };
